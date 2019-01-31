@@ -48,11 +48,14 @@ class MySerial(object):
         self.serial.close()
         self.alive = False
 
+    def write(self, data):
+        return self.serial.write(data)
+
     def _start_reader(self):
         """Start reader thread"""
         self._reader_alive = True
         # start serial->console thread
-        self.receiver_thread = threading.Thread(target=self.reader, name='rx')
+        self.receiver_thread = threading.Thread(target=self._reader, name='rx')
         self.receiver_thread.daemon = True
         self.receiver_thread.start()
 
@@ -63,7 +66,7 @@ class MySerial(object):
             self.serial.cancel_read()
         self.receiver_thread.join()
 
-    def reader(self):
+    def _reader(self):
         """loop and copy serial->console"""
         try:
             LINE_END_STR = bytearray(self.RX_EOL_SEQ)
@@ -75,12 +78,10 @@ class MySerial(object):
                     # print >> sys.stderr, ' RX:', data,'({0})'.format(ord(data))
                     rx_buffer.append(ord(data))
                     if rx_buffer[-LINE_END_LEN:] == LINE_END_STR:
-                        print(rx_buffer)
                         # A line (or other logical segment) has been read
                         bytes = rx_buffer[:-LINE_END_LEN]
                         rx_buffer = bytearray()
                         if len(bytes) > 0:
-                            # print 'calling handler'
                             self.rx_callback(bytes)
         except serial.SerialException:
             self.alive = False

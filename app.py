@@ -25,11 +25,6 @@ def client_msg(msg):
 
 @socketio.on('connect_event')
 def connected_msg(msg):
-    # port = '/dev/cu.usbserial-1410'
-    # global my_serial
-    # my_serial = MySerial(port, rx_callback=socket_rx)
-    # my_serial.connect()
-    # return render_template('index.html')
     emit('server_response', {'data': msg['data']})
 
 
@@ -37,25 +32,47 @@ def connected_msg(msg):
 def list_ports():
     ports = []
     for n, (port, desc, hwid) in enumerate(sorted(comports()), 1):
-        sys.stderr.write('--- {:2}: {:20} {!r}\n'.format(n, port, desc))
+        sys.stderr.write('port: {:2}={:20}\n'.format(n, port))
         ports.append(port)
     return json.dumps({'data': ports})
 
 
-@app.route("/api/start/port")
+@app.route("/api/open/port", methods=['POST'])
 def open_port():
-    port = request.args.get('port')
-
+    port = request.form.get('port')
+    print('open port:', port)
     global my_serial
-    my_serial = MySerial(port, rx_callback=socket_rx)
+    if my_serial is not None:
+        return json.dumps({'data': False})
+    my_serial = MySerial(port, rx_callback=rx_to_socket)
     my_serial.connect()
-    return render_template('index.html')
+    return json.dumps({'data': True})
 
 
-def socket_rx(bytes):
-    with app.test_request_context('/'):
-        data = bytes.decode('utf-8', errors='ignore')
-        socketio.emit('server_response', {'data': data})
+@app.route("/api/close/port", methods=['POST'])
+def close_port():
+    port = request.form.get('port')
+    print('close port:', port)
+    global my_serial
+    my_serial.close()
+    return json.dumps({'data': True})
+
+
+@app.route("/api/write/data", methods=['POST'])
+def write_data():
+    data = request.form.get('data')
+    print('write data:', data)
+    global my_serial
+    if my_serial is not None:
+        return json.dumps({'data': False})
+    length = my_serial.write(data)
+    return json.dumps({'data': length})
+
+
+def rx_to_socket(bytes_data):
+    print(bytes_data)
+    data = bytes_data.decode('utf-8', errors='ignore')
+    socketio.emit('server_response', {'data': data})
 
 
 @socketio.on('serial_start_event')

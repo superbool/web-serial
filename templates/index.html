@@ -1,35 +1,92 @@
-<!DOCTYPE HTML>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Flask-SocketIO Test</title>
     <script type="text/javascript" src="//cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
     <script type="text/javascript" src="//cdn.bootcss.com/socket.io/1.5.1/socket.io.min.js"></script>
     <script type="text/javascript" charset="utf-8">
-    $(document).ready(function() {
-        var socket = io.connect();
+        $(document).ready(function () {
+            var socket = io.connect();
 
-        socket.on('connect', function() {
-            socket.emit('connect_event', {data: 'connected!'});
-        })
+            socket.on('connect', function () {
+                socket.emit('connect_event', {data: 'connected!'});
+            });
 
-        socket.on('server_response', function(msg) {
-            $('#log').append('<br>' + $('<div/>').text('Received #' + ': ' + msg.data).html());
-        });
+            socket.on('server_response', function (msg) {
+                $('#receive_text').append('' + msg.data + '<br>');
+            });
 
-        $('form#emit').submit(function(event) {
+            $('form#emit').submit(function (event) {
                 socket.emit('client_event', {data: $('#emit_data').val()});
                 return false;
             });
-    });
+
+            refreshPort();
+
+        });
+
+        function refreshPort() {
+            //清空原有select内的数据
+            $("#select_port").empty();
+            $.ajax({
+                url: "/api/list/ports",
+                type: "get",
+                dataType: 'json',
+                success: function (data) {
+                    console.info(data);
+                    $("#select_port").append("<option value='-1'>--请选择--</option>");
+                    $.each(data.data, function (index, item) {
+                        $("#select_port").append("<option value='" + item + "'>" + item + "</option>");
+                    });
+                }
+            });
+        }
+
+        function openPort() {
+            port = $('#select_port option:selected').val();
+            console.info(port);
+            if (port === '-1') {
+                alert("请选择正确端口号");
+                return;
+            }
+            $.ajax({
+                url: "/api/open/port",
+                type: "post",
+                data: {port: port},
+                dataType: 'json',
+                success: function (data) {
+                    console.info(data);
+
+                }
+            });
+        }
 
     </script>
 </head>
+
 <body>
-    <h2>WebSokect</h2>
-    <form id="emit" method="POST" action='#'>
-        <input type="text" name="emit_data" id="emit_data" placeholder="Message">
-        <input type="submit" value="Echo">
-    </form>
-    <div id='log'></div>
+<div>
+    <label for="select_port">串口:</label>
+    <select id="select_port"></select>
+    <button onclick="refreshPort()">刷新</button>
+    <br>
+    <button onclick="openPort()">打开串口</button>
+    <br><br>
+    <label for="receive_text">数据接收:</label>
+    <br>
+    <textarea id="receive_text" rows="10" cols="120" readonly="readonly"></textarea>
+    <br>
+    <label><input type="radio" name="mode"/>字符模式</label>
+    <label><input type="radio" name="mode"/>十六进制</label>
+    <button>清空接收</button>
+    <button>暂停接收</button>
+    <br><br>
+    <label for="send_text">数据发送:</label>
+    <br>
+    <textarea id="send_text" rows="10" cols="120" readonly="readonly"></textarea>
+
+</div>
+
 </body>
 </html>
