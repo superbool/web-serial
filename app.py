@@ -43,7 +43,7 @@ def open_port():
     print('open port:', port)
     global my_serial
     if my_serial is not None:
-        return json.dumps({'data': False})
+        return json.dumps({'error': '端口已经打开'})
     my_serial = MySerial(port, rx_callback=rx_to_socket)
     my_serial.connect()
     return json.dumps({'data': True})

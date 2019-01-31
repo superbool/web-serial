@@ -57,7 +57,11 @@
                 dataType: 'json',
                 success: function (data) {
                     console.info(data);
-
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        $("#open_port").val("关闭");
+                    }
                 }
             });
         }
@@ -69,9 +73,9 @@
 <div>
     <label for="select_port">串口:</label>
     <select id="select_port"></select>
-    <button onclick="refreshPort()">刷新</button>
+    <input type="button" value="刷新" onclick="refreshPort()">
     <br>
-    <button onclick="openPort()">打开串口</button>
+    <input id="open_port" type="button" value="打开串口" onclick="openPort()">
     <br><br>
     <label for="receive_text">数据接收:</label>
     <br>
@@ -79,12 +83,12 @@
     <br>
     <label><input type="radio" name="mode"/>字符模式</label>
     <label><input type="radio" name="mode"/>十六进制</label>
-    <button>清空接收</button>
-    <button>暂停接收</button>
+    <input type="button" value="清空接收">
+    <input type="button" value="暂停接收">
     <br><br>
     <label for="send_text">数据发送:</label>
     <br>
-    <textarea id="send_text" rows="10" cols="120" readonly="readonly"></textarea>
+    <textarea id="send_text" rows="10" cols="120"></textarea>
 
 </div>
 
