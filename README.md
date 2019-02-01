@@ -11,6 +11,7 @@
 
 
 界面比较丑陋，基本功能实现了
-![主界面](static/1.png)
+
+![主界面](https://github.com/superbool/web-serial/blob/master/static/1.png)
 
 
