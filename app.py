@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from flask import Flask, render_template, session, request, copy_current_request_context
+from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO, emit
 from serial.tools.list_ports import comports
 import sys, json
@@ -31,8 +31,9 @@ def connected_msg(msg):
 @app.route("/api/list/ports")
 def list_ports():
     ports = []
+    print('port list:')
     for n, (port, desc, hwid) in enumerate(sorted(comports()), 1):
-        sys.stderr.write('port: {:2}={:20}\n'.format(n, port))
+        sys.stderr.write('{:2}:{:20}\n'.format(n, port))
         ports.append(port)
     return json.dumps({'data': ports})
 
@@ -71,7 +72,8 @@ def write_data():
     global my_serial
     if my_serial is None:
         return json.dumps({'data': False})
-    length = my_serial.write(data)
+    bytes_data = data.encode(encoding="utf-8")
+    length = my_serial.write(bytes_data)
     return json.dumps({'data': length})
 
 

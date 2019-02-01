@@ -110,10 +110,12 @@
 
         function sendData() {
             data = $("#send_text").val();
+            end_line = $("#end_line").val();
             console.info(data);
             if (data === '') {
                 alert("发送数据不能为空");
             }
+            data += end_line;
             $.ajax({
                 url: "/api/write/data",
                 type: "post",
@@ -189,6 +191,14 @@
     <br>
     <label><input type="radio" name="tx_mode"/>字符模式</label>
     <label><input type="radio" name="tx_mode"/>十六进制</label>
+    &nbsp;
+    <label for="end_line">换行符:</label>
+    <select id="end_line">
+        <option value="" selected>无</option>
+        <option value="\r\n">\r\n</option>
+        <option value="\r">\r</option>
+    </select>
+    &nbsp;
     <input id="btn_send_text" type="button" value="发送" onclick="sendData()">
 
 
