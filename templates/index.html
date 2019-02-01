@@ -14,7 +14,9 @@
             });
 
             socket.on('server_response', function (msg) {
-                $('#receive_text').append('' + msg.data + '<br>');
+                old = $('#receive_text').val();
+                $('#receive_text').val(old + msg.data + '\n');
+                $('#receive_text').scrollTop($('#receive_text')[0].scrollHeight);
             });
 
             $('form#emit').submit(function (event) {
@@ -43,8 +45,41 @@
             });
         }
 
+        function openOrClosePort() {
+            btn_port = $("#open_port").val();
+            console.info(btn_port);
+            if (btn_port === '打开串口') {
+                openPort();
+            } else {
+                closePort();
+            }
+        }
+
+        function closePort() {
+            $.ajax({
+                url: "/api/close/port",
+                type: "post",
+                data: {
+                    port: port
+                },
+                dataType: 'json',
+                success: function (data) {
+                    console.info(data);
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        $("#open_port").val("打开串口");
+                    }
+                }
+            });
+        }
+
         function openPort() {
             port = $('#select_port option:selected').val();
+            baudrate = $('#baudrate option:selected').val();
+            bytesizes = $('#bytesizes option:selected').val();
+            stopbits = $('#stopbits option:selected').val();
+            parities = $('#parities option:selected').val();
             console.info(port);
             if (port === '-1') {
                 alert("请选择正确端口号");
@@ -53,7 +88,10 @@
             $.ajax({
                 url: "/api/open/port",
                 type: "post",
-                data: {port: port},
+                data: {
+                    port: port, baudrate: baudrate, bytesizes: bytesizes,
+                    stopbits: stopbits, parities: parities
+                },
                 dataType: 'json',
                 success: function (data) {
                     console.info(data);
@@ -66,6 +104,32 @@
             });
         }
 
+        function cleanRx() {
+            $("#receive_text").val('');
+        }
+
+        function sendData() {
+            data = $("#send_text").val();
+            console.info(data);
+            if (data === '') {
+                alert("发送数据不能为空");
+            }
+            $.ajax({
+                url: "/api/write/data",
+                type: "post",
+                data: {data: data},
+                dataType: 'json',
+                success: function (data) {
+                    console.info(data);
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+
+                    }
+                }
+            });
+        }
+
     </script>
 </head>
 
@@ -73,22 +137,60 @@
 <div>
     <label for="select_port">串口:</label>
     <select id="select_port"></select>
-    <input type="button" value="刷新" onclick="refreshPort()">
+    &nbsp;
+    <label for="baudrate">波特率:</label>
+    <select id="baudrate">
+        <option value="9600" selected>9600</option>
+        <option value="19200">19200</option>
+        <option value="38400">38400</option>
+        <option value="57600">57600</option>
+        <option value="115200">115200</option>
+    </select>
+    &nbsp;
+    <label for="bytesizes">数据位:</label>
+    <select id="bytesizes">
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8" selected>8</option>
+    </select>
+    &nbsp;
+    <label for="stopbits">停止位:</label>
+    <select id="stopbits">
+        <option value="1" selected>1</option>
+        <option value="1.5">1.5</option>
+        <option value="2">2</option>
+    </select>
+    &nbsp;
+    <label for="parities">校验位:</label>
+    <select id="parities">
+        <option value="N" selected>NONE</option>
+        <option value="E">EVEN</option>
+        <option value="O">ODD</option>
+        <option value="S">SPACE</option>
+        <option value="M">MARK</option>
+    </select>
     <br>
-    <input id="open_port" type="button" value="打开串口" onclick="openPort()">
+    <input type="button" value="刷新" onclick="refreshPort()">
+    <input id="open_port" type="button" value="打开串口" onclick="openOrClosePort()">
     <br><br>
     <label for="receive_text">数据接收:</label>
     <br>
-    <textarea id="receive_text" rows="10" cols="120" readonly="readonly"></textarea>
+    <textarea id="receive_text" rows="10" cols="120" readonly="readonly" style="overflow-y:auto"></textarea>
     <br>
-    <label><input type="radio" name="mode"/>字符模式</label>
-    <label><input type="radio" name="mode"/>十六进制</label>
-    <input type="button" value="清空接收">
+    <label><input type="radio" name="rx_mode"/>字符模式</label>
+    <label><input type="radio" name="rx_mode"/>十六进制</label>
+    <input type="button" value="清空接收" onclick="cleanRx()">
     <input type="button" value="暂停接收">
     <br><br>
     <label for="send_text">数据发送:</label>
     <br>
     <textarea id="send_text" rows="10" cols="120"></textarea>
+    <br>
+    <label><input type="radio" name="tx_mode"/>字符模式</label>
+    <label><input type="radio" name="tx_mode"/>十六进制</label>
+    <input id="btn_send_text" type="button" value="发送" onclick="sendData()">
+
 
 </div>
 

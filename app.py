@@ -39,12 +39,17 @@ def list_ports():
 
 @app.route("/api/open/port", methods=['POST'])
 def open_port():
+    print('open port:', request.form)
     port = request.form.get('port')
-    print('open port:', port)
+    baudrate = int(request.form.get('baudrate'))
+    bytesizes = int(request.form.get('bytesizes'))
+    stopbits = float(request.form.get('stopbits'))
+    parities = request.form.get('parities')
     global my_serial
     if my_serial is not None:
         return json.dumps({'error': '端口已经打开'})
-    my_serial = MySerial(port, rx_callback=rx_to_socket)
+    my_serial = MySerial(port, baudrate=baudrate, rx_callback=rx_to_socket,
+                         bytesize=bytesizes, parity=parities, stopbits=stopbits)
     my_serial.connect()
     return json.dumps({'data': True})
 
@@ -55,6 +60,7 @@ def close_port():
     print('close port:', port)
     global my_serial
     my_serial.close()
+    my_serial = None
     return json.dumps({'data': True})
 
 
@@ -63,7 +69,7 @@ def write_data():
     data = request.form.get('data')
     print('write data:', data)
     global my_serial
-    if my_serial is not None:
+    if my_serial is None:
         return json.dumps({'data': False})
     length = my_serial.write(data)
     return json.dumps({'data': length})
