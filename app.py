@@ -74,10 +74,11 @@ def write_data():
     if my_serial is None:
         return json.dumps({'data': False})
     bytes_data = data.encode(encoding="utf-8")
-    if end_line == '\r\n':
+    if end_line == 'rn':
         bytes_data += b'\r\n'
-    elif end_line == '\r':
+    elif end_line == 'r':
         bytes_data += b'\r'
+    print('write byte data:', bytes_data)
     length = my_serial.write(bytes_data)
     return json.dumps({'data': length})
 
