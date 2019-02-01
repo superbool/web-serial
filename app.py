@@ -67,12 +67,17 @@ def close_port():
 
 @app.route("/api/write/data", methods=['POST'])
 def write_data():
+    print('write data:', request.form)
     data = request.form.get('data')
-    print('write data:', data)
+    end_line = request.form.get('end_line')
     global my_serial
     if my_serial is None:
         return json.dumps({'data': False})
     bytes_data = data.encode(encoding="utf-8")
+    if end_line == '\r\n':
+        bytes_data += b'\r\n'
+    elif end_line == '\r':
+        bytes_data += b'\r'
     length = my_serial.write(bytes_data)
     return json.dumps({'data': length})
 

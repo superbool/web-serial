@@ -115,11 +115,10 @@
             if (data === '') {
                 alert("发送数据不能为空");
             }
-            data += end_line;
             $.ajax({
                 url: "/api/write/data",
                 type: "post",
-                data: {data: data},
+                data: {data: data, end_line: end_line},
                 dataType: 'json',
                 success: function (data) {
                     console.info(data);
