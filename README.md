@@ -12,6 +12,13 @@
 
 界面比较丑陋，基本功能实现了
 
-![主界面](https://github.com/superbool/web-serial/blob/master/static/1.png)
+![主界面](https://github.com/superbool/web-serial/blob/master/static/1.jpg)
 
+使用方法：
+
+下载代码，安装依赖: `pip3 install flask socketio pyserial`
+
+直接运行: `python3 app.py` 就可以了 默认端口号5000
+
+这样你就可以在本地浏览器使用远端的串口比如树莓派
 

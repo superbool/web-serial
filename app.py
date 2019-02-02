@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from flask import Flask, render_template, session, request
+from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
 from serial.tools.list_ports import comports
 import sys, json
