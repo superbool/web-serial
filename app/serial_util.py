@@ -75,7 +75,6 @@ class MySerial(object):
             while self.alive and self._reader_alive:
                 data = self.serial.read(1)
                 if len(data) != 0:  # check for timeout
-                    # print >> sys.stderr, ' RX:', data,'({0})'.format(ord(data))
                     rx_buffer.append(ord(data))
                     if rx_buffer[-LINE_END_LEN:] == LINE_END_STR:
                         # A line (or other logical segment) has been read

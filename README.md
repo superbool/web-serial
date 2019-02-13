@@ -12,7 +12,7 @@
 
 界面比较丑陋，基本功能实现了
 
-![主界面](https://github.com/superbool/web-serial/blob/master/static/1.jpg)
+![主界面](./static/demo.jpg)
 
 使用方法：
 

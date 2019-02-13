@@ -1,14 +1,14 @@
-#!/usr/bin/env python
+# -*- encoding: utf8 -*-
+
 from flask import Flask, render_template, request
-from flask_socketio import SocketIO, emit
 from serial.tools.list_ports import comports
 import sys, json
-from serial_util import MySerial
+from .serial_util import MySerial
+import logging
+from .socket import rx_to_socket
+from app import app
 
-app = Flask(__name__, template_folder='./templates')
-app.config['SECRET_KEY'] = 'secret!'
-
-socketio = SocketIO(app)
+logger = logging.getLogger(__name__)
 
 my_serial = None
 
@@ -18,29 +18,19 @@ def index():
     return render_template('index.html')
 
 
-@socketio.on('client_event')
-def client_msg(msg):
-    emit('server_response', {'data': msg['data']})
-
-
-@socketio.on('connect_event')
-def connected_msg(msg):
-    emit('server_response', {'data': msg['data']})
-
-
 @app.route("/api/list/ports")
 def list_ports():
     ports = []
-    print('port list:')
+    logger.info('port list:')
     for n, (port, desc, hwid) in enumerate(sorted(comports()), 1):
-        sys.stderr.write('{:2}:{:20}\n'.format(n, port))
+        logger.info('{:2}:{:20}\n'.format(n, port))
         ports.append(port)
     return json.dumps({'data': ports})
 
 
 @app.route("/api/open/port", methods=['POST'])
 def open_port():
-    print('open port:', request.form)
+    logger.info('open port:%s', request.form)
     port = request.form.get('port')
     baudrate = int(request.form.get('baudrate'))
     bytesizes = int(request.form.get('bytesizes'))
@@ -58,7 +48,7 @@ def open_port():
 @app.route("/api/close/port", methods=['POST'])
 def close_port():
     port = request.form.get('port')
-    print('close port:', port)
+    logger.info('close port:%s', port)
     global my_serial
     my_serial.close()
     my_serial = None
@@ -67,7 +57,7 @@ def close_port():
 
 @app.route("/api/write/data", methods=['POST'])
 def write_data():
-    print('write data:', request.form)
+    logger.info('write data:%s', request.form)
     data = request.form.get('data')
     end_line = request.form.get('end_line')
     global my_serial
@@ -78,21 +68,6 @@ def write_data():
         bytes_data += b'\r\n'
     elif end_line == 'r':
         bytes_data += b'\r'
-    print('write byte data:', bytes_data)
+    logger.info('write byte data:%s', bytes_data)
     length = my_serial.write(bytes_data)
     return json.dumps({'data': length})
-
-
-def rx_to_socket(bytes_data):
-    print(bytes_data)
-    data = bytes_data.decode('utf-8', errors='ignore')
-    socketio.emit('server_response', {'data': data})
-
-
-@socketio.on('serial_start_event')
-def connected_msg(msg):
-    emit('server_response', {'data': msg['data']})
-
-
-if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0')
