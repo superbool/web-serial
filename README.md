@@ -22,3 +22,7 @@
 
 这样你就可以在本地浏览器使用远端的串口比如树莓派
 
+
+
+### License
+Apache Dubbo is under the Apache 2.0 license. See the LICENSE file for details.
